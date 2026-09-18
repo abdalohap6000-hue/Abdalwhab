@@ -1,11 +1,39 @@
-<div align="center">
+# قلمي AI — Standalone Version
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+## التثبيت
+```bash
+npm install
+npm run dev
+```
 
-  <h1>Built with AI Studio</h2>
+## ربط الذكاء الاصطناعي
+افتح `src/lib/generationService.js` وعدّل دالة `generateForPlatform` لتستخدم API الخاص بك.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+### مثال مع OpenAI:
+```js
+const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${import.meta.env.VITE_OPENAI_KEY}` },
+  body: JSON.stringify({ model: 'gpt-4o', messages: [{ role: 'user', content: prompt }] }),
+});
+const data = await response.json();
+return [platform, data.choices[0].message.content];
+```
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### مثال مع Anthropic Claude:
+```js
+const response = await fetch('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: { 'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+  body: JSON.stringify({ model: 'claude-3-5-sonnet-20241022', max_tokens: 1024, messages: [{ role: 'user', content: prompt }] }),
+});
+const data = await response.json();
+return [platform, data.content[0].text];
+```
 
-</div>
+## بوابة الدفع
+تم ربط Lemon Squeezy مسبقاً في `src/pages/Premium.jsx` — استبدل الروابط برواباطك.
+
+## التخزين
+المكتبة تستخدم `localStorage` بدلاً من قاعدة بيانات خارجية.
+لاستبدالها بـ Supabase أو Firebase، عدّل `src/lib/savedPostsService.js`.

@@ -1,0 +1,6 @@
+{
+  "name": "قلمي AI",
+  "description": "مولّد محتوى عربي احترافي بالذكاء الاصطناعي لمنصات التواصل الاجتماعي",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
