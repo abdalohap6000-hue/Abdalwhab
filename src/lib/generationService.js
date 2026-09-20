@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // generationService.js — يستدعي وسيط الخادم (Supabase Edge Function)
-// مع توفير مولد محلي ذكي عند غياب مفاتيح الخادم في بيئة المعاينة.
+// بدلاً من الاتصال المباشر بمزود AI، لتجنب كشف مفتاح API في المتصفح.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { supabase } from '@/integrations/supabase/client';
@@ -79,6 +79,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const DEFAULT_MODEL = import.meta.env.VITE_AI_MODEL || 'google/gemini-3-flash-preview';
 const EDGE_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/generate-content` : '';
 
+// مرتبة من الأخف/العادي إلى الأقوى
 export const AVAILABLE_MODELS = [
   { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite', tier: 'lite', desc: 'الأسرع والأخف' },
   { id: 'google/gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite', tier: 'lite', desc: 'اقتصادي وسريع' },
@@ -97,6 +98,7 @@ export function setSelectedModel(id) {
   localStorage.setItem('qalami_ai_model', id);
 }
 
+// معاملات توليد مضبوطة تلقائياً حسب فئة النموذج (كلما كان النموذج أخف، قلّلنا العشوائية).
 const TIER_PARAMS = {
   lite: { temperature: 0.6, top_p: 0.9, frequency_penalty: 0.4, presence_penalty: 0.15 },
   flash: { temperature: 0.75, top_p: 0.95, frequency_penalty: 0.3, presence_penalty: 0.2 },
@@ -108,77 +110,12 @@ export function getModelParams(modelId) {
   return { ...(TIER_PARAMS[tier] || TIER_PARAMS.flash), tier };
 }
 
-function generateLocalPost({ platform, tone, postType, userInput, length, language }) {
-  const cleanInput = (userInput || '').trim() || 'صناعة المحتوى الرقمي';
-
-  const getHashtags = (plat) => {
-    if (language === 'en') {
-      return plat === 'twitter' ? '#Growth #Trending' : '#AI #ContentCreator #Viral #Explore #Tips';
-    }
-    if (plat === 'twitter') return '#تطوير_الذات #نجاح';
-    if (plat === 'tiktok') return '#fyp #ترند #explore #محتوى';
-    if (plat === 'youtube') return '#قلمي #محتوى_هادف #صناع_المحتوى';
-    return '#ريادة_أعمال #تسويق_إلكتروني #محتوى_رقمي #تطوير_الذات #نجاح';
-  };
-
-  if (language === 'en') {
-    if (platform === 'twitter') {
-      return `💡 Quick insight on ${cleanInput}:\n\nTrue mastery comes from consistent daily execution, not random bursts of motivation.\n\nWhat's your take on this? ${getHashtags(platform)}`;
-    }
-    if (platform === 'tiktok') {
-      return `Stop scrolling if you want to master ${cleanInput}! 🚀\nHere is the secret formula nobody talks about. Try it today and save this video for later! 🔥\n\n${getHashtags(platform)}`;
-    }
-    if (platform === 'youtube') {
-      return `Mastering ${cleanInput}: The Definitive Guide\n\nIn this video, we break down step-by-step everything you need to know about ${cleanInput} and how to apply it effectively.\n\nKey Highlights:\n0:00 - Introduction\n1:20 - Core Strategy\n3:45 - Actionable Tips\n\n🔔 Don't forget to Subscribe and hit the bell icon for more practical insights!\n\n${getHashtags(platform)}`;
-    }
-    if (platform === 'snapchat') {
-      return `Hey everyone 👋\nA lot of you asked about ${cleanInput}..\nConsistency + Action = Real Results ✨\n\nSwipe up and let me know your thoughts! 📲`;
-    }
-    return `✨ Unlocking the full potential of ${cleanInput}\n\nSuccess is a journey built on intentional steps:\n• Focus on quality over noise.\n• Execute with consistency.\n• Learn and iterate fast.\n\n💬 Drop your thoughts below — let's discuss!\n\n${getHashtags(platform)}`;
-  }
-
-  const prefix = language === 'ar_eg'
-    ? 'بص يا سيدي، لو بتفكر في '
-    : language === 'ar_gulf'
-    ? 'يا هلا والله! إذا تبي تبدع في '
-    : 'سرّ حقيقي يصنع فارقاً استثنائياً في ';
-
-  const cta = language === 'ar_eg'
-    ? 'قولي رأيك في الكومنتات واعمل شير عشان غيرك يستفيد! 👇'
-    : language === 'ar_gulf'
-    ? 'وش رأيك بهالكلام؟ شاركنا بتجربتك بالتعليقات وحياك الله! 💬'
-    : 'ما هي تجربتك الشخصية مع هذا الأمر؟ شاركنا رأيك في التعليقات! 💬';
-
-  if (platform === 'twitter') {
-    return `${prefix}${cleanInput}:\nالنجاح لا يأتي بالصدفة، بل هو نتاج خطوات يومية مدروسة وتركيز بلا تشتت.\n\n${cta}\n${getHashtags(platform)}`;
-  }
-
-  if (platform === 'tiktok') {
-    return `وقف التمرير ثواني! 🛑\nلو مهتم بـ ${cleanInput}، هذي أهم نصيحة ممكن تسمعها اليوم وتغير نتائجك كلياً.\n\nاحفظ المقطع عندك وشاركه مع مهتم! 🔥\n${getHashtags(platform)}`;
-  }
-
-  if (platform === 'youtube') {
-    return `دليلك الشامل إلى ${cleanInput} | خطوات عملية ومباشرة\n\nفي هذا المقطع نناقش كل ما تحتاج معرفته حول ${cleanInput} بطريقة مبسطة ومباشرة تناسب كل طموح.\n\n📌 أبرز المحاور:\n- البداية الصحيحة وتجنب الأخطاء الشائعة\n- استراتيجيات مجربة للتطبيق الفعلي\n- نصائح احترافية لمضاعفة النتائج\n\n🔔 اشترك بالقناة وفعّل جرس التنبيهات ليصلك كل جديد!\n\n${getHashtags(platform)}`;
-  }
-
-  if (platform === 'snapchat') {
-    return `يا هلا بالجميع 👋\nكثير يسألوني عن ${cleanInput}.. باختصار:\nالتركيز + الاستمرارية = نتائج مذهلة ✨\n\nسوايب أب وردوا علي برأيكم! 📲`;
-  }
-
-  // Instagram (Default)
-  return `✨ ${prefix}${cleanInput}\n\nالكثير يظن أن التميز يتطلب تعقيدات كبرى، بينما السر الحقيقي يكمن في إتقان الأساسيات:\n\n🔹 الخطوة الأولى: التحديد الدقيق للأولويات والهدف النهائي.\n🔹 الخطوة الثانية: العمل اليومي المستمر وتفادي فخاخ التسويف.\n🔹 الخطوة الثالثة: قياس النتائج بمرونة والتطوير الدائم.\n\n${cta}\n\n${getHashtags(platform)}`;
-}
-
-async function callAI({ system, prompt, model, platform, tone, postType, userInput, length, language }) {
-  const modelId = model || getSelectedModel();
-
+async function callAI({ system, prompt, model }) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    // محاكاة التوليد الفوري في بيئة المعاينة مع استهلاك النقاط بصورة صحيحة
-    const { data: newBalance } = await supabase.rpc('consume_credits', { _amount: 1, _model: modelId });
-    const text = generateLocalPost({ platform, tone, postType, userInput, length, language });
-    return { text, balance: newBalance, plan: 'free' };
+    throw new Error('إعدادات Supabase ناقصة (VITE_SUPABASE_URL أو VITE_SUPABASE_PUBLISHABLE_KEY).');
   }
 
+  const modelId = model || getSelectedModel();
   const { tier, ...params } = getModelParams(modelId);
 
   const { data: sessionData } = await supabase.auth.getSession();
@@ -201,10 +138,7 @@ async function callAI({ system, prompt, model, platform, tone, postType, userInp
       body: JSON.stringify({ system, prompt, model: modelId, ...params }),
     });
   } catch {
-    // خطأ اتصال بالخادم البعيد — نستخدم المولد المحلي لتفادي تعطل المستخدم
-    const { data: newBalance } = await supabase.rpc('consume_credits', { _amount: 1, _model: modelId });
-    const text = generateLocalPost({ platform, tone, postType, userInput, length, language });
-    return { text, balance: newBalance, plan: 'free' };
+    throw new Error('تعذّر الاتصال بالخادم — تحقّق من اتصال الإنترنت ثم أعد المحاولة.');
   }
 
   const data = await res.json().catch(() => ({}));
@@ -219,6 +153,7 @@ async function callAI({ system, prompt, model, platform, tone, postType, userInp
   if (!text) throw new Error(`لم يُرجِع النموذج ${modelId} أي نص — جرّب نموذجاً آخر أو أعد المحاولة.`);
   return { text, balance: data?.balance, plan: data?.plan };
 }
+
 
 export async function generateContent({ platforms, tone, postType, userInput, length = 'medium', language = 'ar', model }) {
   const toneName = TONE_MAP[tone] || tone;
@@ -249,17 +184,7 @@ ${platformGuide}
 - تأكد من صحة الإملاء والنحو قبل الإرسال.`;
 
     try {
-      const { text, balance, plan } = await callAI({
-        system: SYSTEM_PROMPT,
-        prompt,
-        model: modelId,
-        platform,
-        tone,
-        postType,
-        userInput,
-        length,
-        language,
-      });
+      const { text, balance, plan } = await callAI({ system: SYSTEM_PROMPT, prompt, model: modelId });
       return { platform, text, balance, plan };
     } catch (err) {
       return { platform, text: `⚠️ ${err.message}`, error: err.message, code: err.code };
@@ -277,3 +202,4 @@ ${platformGuide}
 
   return { results, errors, model: modelId, balance };
 }
+
