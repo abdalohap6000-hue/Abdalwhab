@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import BottomNav from "../components/qalami/BottomNav";
 import { fetchCredits, PRO_MONTHLY_CREDITS, SIGNUP_CREDITS } from "../lib/creditsService";
 import { useI18n } from "@/i18n";
+import { Capacitor } from "@capacitor/core";
+import { presentPaywall, PAYWALL_RESULT } from "@/lib/revenuecat";
+import { toast } from "sonner";
 
 const MONTHLY_URL = "https://imagineal.lemonsqueezy.com/checkout/buy/fc74f7a5-475a-400f-a106-4004088743c7";
 const YEARLY_URL  = "https://imagineal.lemonsqueezy.com/checkout/buy/e91fa95f-213a-428f-84e2-25ac341c8ab5";
@@ -26,7 +29,27 @@ export default function Premium() {
   const monthlyPrice = `${fmt("4.99")}$`;
   const yearlyPrice = `${fmt("29.99")}$`;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const paywallResult = await presentPaywall();
+        if (
+          paywallResult?.result === PAYWALL_RESULT.PURCHASED ||
+          paywallResult?.result === PAYWALL_RESULT.RESTORED
+        ) {
+          toast.success("تم الاشتراك بنجاح! جاري تحديث الرصيد...");
+          setTimeout(async () => {
+            const updated = await fetchCredits();
+            if (updated) setCredits(updated);
+          }, 2000);
+        }
+      } catch (err) {
+        console.error("Paywall error:", err);
+        toast.error("تعذر فتح صفحة الاشتراك");
+      }
+      return;
+    }
+
     const url = selectedPlan === "monthly" ? MONTHLY_URL : YEARLY_URL;
     window.open(url, "_blank");
   };

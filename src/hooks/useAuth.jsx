@@ -1,5 +1,6 @@
 import { useEffect, useState, createContext, useContext } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { identifyPurchasesUser, resetPurchasesUser } from "@/lib/revenuecat";
 
 const AuthContext = createContext({ user: null, session: null, loading: true });
 
@@ -13,11 +14,17 @@ export function AuthProvider({ children }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      if (s?.user?.id) {
+        identifyPurchasesUser(s.user.id);
+      }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
+      if (data.session?.user?.id) {
+        identifyPurchasesUser(data.session.user.id);
+      }
       setLoading(false);
     });
 
@@ -36,5 +43,6 @@ export function useAuth() {
 }
 
 export async function signOut() {
+  await resetPurchasesUser();
   await supabase.auth.signOut();
 }
