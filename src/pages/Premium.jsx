@@ -7,15 +7,26 @@ import { Capacitor } from "@capacitor/core";
 import { presentPaywall, PAYWALL_RESULT } from "@/lib/revenuecat";
 import { toast } from "sonner";
 
+// ─── بوابة الدفع للويب (انتقالية) ──────────────────────────────────────────
 const MONTHLY_URL = "https://imagineal.lemonsqueezy.com/checkout/buy/fc74f7a5-475a-400f-a106-4004088743c7";
 const YEARLY_URL  = "https://imagineal.lemonsqueezy.com/checkout/buy/e91fa95f-213a-428f-84e2-25ac341c8ab5";
 
-
+// ─── سحب الرصيد بعد الشراء مع انتظار وصول webhook ──────────────────────────
+// الـ webhook (RevenueCat → Supabase) قد يتأخر ثوانٍ — نجرب حتى 6 مرات × ثانيتين.
+async function pollCreditsUntilPro(maxAttempts = 6, delayMs = 2000) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const c = await fetchCredits();
+    if (c?.plan === "pro") return c;
+    await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return null;
+}
 
 export default function Premium() {
   const { t, fmt, dir } = useI18n();
   const [selectedPlan, setSelectedPlan] = useState("yearly");
   const [credits, setCredits] = useState(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => { fetchCredits().then(setCredits); }, []);
 
@@ -29,23 +40,35 @@ export default function Premium() {
   const monthlyPrice = `${fmt("4.99")}$`;
   const yearlyPrice = `${fmt("29.99")}$`;
 
+  const applyPurchaseResult = async () => {
+    const updated = await pollCreditsUntilPro();
+    if (updated) {
+      setCredits(updated);
+      toast.success("تم تفعيل اشتراك Pro وإضافة النقاط لحسابك! 🎉", { duration: 8000 });
+    } else {
+      // الشراء تم لكن الـ webhook لم يصل بعد — يظهر الرصيد عند الفتح التالي
+      toast.info("تم الشراء بنجاح — ستظهر النقاط في حسابك خلال لحظات.");
+    }
+  };
+
   const handleCheckout = async () => {
     if (Capacitor.isNativePlatform()) {
+      if (busy) return;
+      setBusy(true);
       try {
         const paywallResult = await presentPaywall();
         if (
           paywallResult?.result === PAYWALL_RESULT.PURCHASED ||
           paywallResult?.result === PAYWALL_RESULT.RESTORED
         ) {
-          toast.success("تم الاشتراك بنجاح! جاري تحديث الرصيد...");
-          setTimeout(async () => {
-            const updated = await fetchCredits();
-            if (updated) setCredits(updated);
-          }, 2000);
+          toast.success("تم الاشتراك! جاري تفعيل باقتك...");
+          await applyPurchaseResult();
         }
       } catch (err) {
         console.error("Paywall error:", err);
         toast.error("تعذر فتح صفحة الاشتراك");
+      } finally {
+        setBusy(false);
       }
       return;
     }
@@ -103,10 +126,10 @@ export default function Premium() {
           ))}
         </div>
 
-        <motion.button whileTap={{ scale: 0.97 }} onClick={handleCheckout}
-          className="w-full h-[62px] rounded-2xl text-lg font-black text-black flex items-center justify-center btn-generate"
+        <motion.button whileTap={{ scale: 0.97 }} onClick={handleCheckout} disabled={busy}
+          className="w-full h-[62px] rounded-2xl text-lg font-black text-black flex items-center justify-center btn-generate disabled:opacity-60"
           style={{ background: "linear-gradient(135deg, #FFD700, #FF6B35)" }}>
-          {t("subscribe_now", { price: selectedPlan === "monthly" ? `${monthlyPrice} ${t("per_month")}` : `${yearlyPrice} ${t("per_year")}` })}
+          {busy ? "جارٍ المعالجة..." : t("subscribe_now", { price: selectedPlan === "monthly" ? `${monthlyPrice} ${t("per_month")}` : `${yearlyPrice} ${t("per_year")}` })}
         </motion.button>
         <p className="text-center text-xs text-white/20 mt-3 leading-relaxed">
           {t("checkout_note")}
