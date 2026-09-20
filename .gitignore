@@ -16,6 +16,11 @@ dist-ssr
 .nitro
 *.local
 
+# ── الأسرار — لا تُرفع أبداً ──
+.env
+.env.*
+!.env.example
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
