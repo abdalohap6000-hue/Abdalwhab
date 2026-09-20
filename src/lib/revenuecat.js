@@ -9,9 +9,6 @@ const REVENUECAT_GOOGLE_API_KEY = import.meta.env.VITE_REVENUECAT_GOOGLE_KEY || 
 
 let configured = false;
 
-/**
- * تهيئة SDK — تعمل فقط على المنصات الأصلية (Android/iOS)
- */
 export async function initPurchases() {
   if (!Capacitor.isNativePlatform()) return;
   if (!REVENUECAT_GOOGLE_API_KEY) {
@@ -27,10 +24,6 @@ export async function initPurchases() {
   }
 }
 
-/**
- * تسجيل هوية المستخدم بربطه بمعرّف Supabase
- * (نفس الـ UUID الذي يصل في webhook إلى Supabase → grant_subscription)
- */
 export async function identifyPurchasesUser(userId) {
   if (!Capacitor.isNativePlatform() || !userId || !configured) return;
   try {
@@ -40,9 +33,6 @@ export async function identifyPurchasesUser(userId) {
   }
 }
 
-/**
- * إعادة تعيين هوية المستخدم عند تسجيل الخروج
- */
 export async function resetPurchasesUser() {
   if (!Capacitor.isNativePlatform() || !configured) return;
   try {
@@ -52,28 +42,6 @@ export async function resetPurchasesUser() {
   }
 }
 
-/**
- * فتح شاشة الاشتراك الأصلية (Paywall)
- */
-export async function presentPaywall() {
-  if (!Capacitor.isNativePlatform()) return null;
-  return await RevenueCatUI.presentPaywall();
-}
-
-export { PAYWALL_RESULT };
-export async function resetPurchasesUser() {
-  if (!Capacitor.isNativePlatform()) return;
-  try {
-    await Purchases.logOut();
-  } catch (error) {
-    console.error('[RevenueCat] فشل تسجيل الخروج:', error);
-  }
-}
-
-/**
- * فتح شاشة الاشتراك الأصلية (Paywall)
- * @returns {Promise<{ result: PAYWALL_RESULT } | null>}
- */
 export async function presentPaywall() {
   if (!Capacitor.isNativePlatform()) return null;
   return await RevenueCatUI.presentPaywall();
