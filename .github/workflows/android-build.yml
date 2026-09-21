@@ -40,6 +40,9 @@ jobs:
       - name: Build web assets
         run: npm run build
 
+      - name: Install Capacitor Assets
+        run: npm install -D @capacitor/assets
+        
       - name: Generate Capacitor Assets
         run: npx capacitor-assets generate
 
