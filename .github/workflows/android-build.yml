@@ -44,7 +44,7 @@ jobs:
         run: npm install -D @capacitor/assets
         
       - name: Generate Capacitor Assets
-        run: npx capacitor-assets generate
+        run: npx capacitor-assets generate --asset-path public
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
