@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -64,7 +65,11 @@ export default function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/home` },
+      options: {
+  redirectTo: Capacitor.isNativePlatform()
+    ? 'com.qalami.app://auth-callback'
+    : `${window.location.origin}/home`,
+},
     });
     if (error) {
       toast.error(error.message);
