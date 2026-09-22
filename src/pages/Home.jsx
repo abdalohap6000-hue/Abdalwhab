@@ -78,7 +78,8 @@ export default function Home() {
     else fetchCredits().then((c) => c && setCredits(c));
 
     if (errors.length) {
-      toast.error(t("generation_failed", { platforms: errors.map((e) => t(`platform_${e.platform}`)).join("، ") }), {
+      toast.error(t("generation_failed", { platforms: errors.map((e) => e.platform)
+        .join("، ") }), {
         description: errors[0].message,
         duration: 8000,
       });
