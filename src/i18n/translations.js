@@ -12,6 +12,8 @@ export const translations = {
     loading: "جارٍ التحميل…",
     search: "بحث",
     or: "أو",
+    retry: "إعادة المحاولة",
+    offline_banner: "لا يوجد اتصال بالإنترنت — تحقق من شبكتك",
     version: "الإصدار 1.0.0 — قلمي AI ✒️",
 
     // التنقل
@@ -82,6 +84,7 @@ export const translations = {
     library_title: "مكتبتي 📚",
     library_empty: "مكتبتك فارغة بعد",
     library_cta: "ولّد أول منشور ✨",
+    library_load_error: "تعذّر تحميل منشوراتك — تحقق من اتصالك",
     today: "اليوم",
     yesterday: "أمس",
     this_week: "هذا الأسبوع",
@@ -201,6 +204,8 @@ export const translations = {
     loading: "Loading…",
     search: "Search",
     or: "or",
+    retry: "Retry",
+    offline_banner: "No internet connection — check your network",
     version: "Version 1.0.0 — Qalami AI ✒️",
 
     nav_create: "Create",
@@ -264,6 +269,7 @@ export const translations = {
     library_title: "My library 📚",
     library_empty: "Your library is empty",
     library_cta: "Generate your first post ✨",
+    library_load_error: "Couldn't load your posts — check your connection",
     today: "Today",
     yesterday: "Yesterday",
     this_week: "This week",
