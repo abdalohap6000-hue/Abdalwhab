@@ -10,7 +10,8 @@ export const SavedPost = {
       .limit(limit);
     if (error) {
       console.error("SavedPost.list error:", error);
-      return [];
+      // null = فشل الجلب (مثل انقطاع الشبكة) — يميّزه المستدعي عن القائمة الفارغة حقاً []
+      return null;
     }
     // Map created_at → created_date for existing UI code compatibility
     return (data || []).map((r) => ({ ...r, created_date: r.created_at }));
