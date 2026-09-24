@@ -5,6 +5,8 @@ const config: CapacitorConfig = {
   appName: 'قلمي',
   webDir: 'dist',
   icon: 'public/icon-512.png',
+  // لون خلفية WebView — يمنع الوميض الأبيض قبل أول رسم للصفحة الداكنة
+  backgroundColor: '#020203',
   server: {
     // https ضروري لعمل جلسة Supabase والكوكيز داخل WebView بسلاسة
     androidScheme: 'https',
