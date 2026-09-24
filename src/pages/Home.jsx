@@ -78,13 +78,20 @@ export default function Home() {
     else fetchCredits().then((c) => c && setCredits(c));
 
     if (errors.length) {
+      const allFailed = errors.length === selectedPlatforms.length;
+      const isBilling = errors[0].code === "NO_CREDITS" || errors[0].code === "MODEL_LOCKED";
       toast.error(t("generation_failed", { platforms: errors.map((e) => e.platform)
         .join("، ") }), {
         description: errors[0].message,
         duration: 8000,
+        // زر إعادة المحاولة فقط عند فشل كل المنصات بسبب خطأ غير مرتبط بالفوترة.
+        // في الفشل الجزئي تُعرض النتائج الناجحة في صفحة النتائج، وإعادة التوليد الكاملة هنا قد تخصم نقاطاً إضافية.
+        ...(allFailed && !isBilling ? {
+          action: { label: t("retry"), onClick: () => { handleGenerate(); } },
+        } : {}),
       });
-      if (errors.length === selectedPlatforms.length) {
-        if (errors[0].code === "NO_CREDITS" || errors[0].code === "MODEL_LOCKED") navigate("/premium");
+      if (allFailed) {
+        if (isBilling) navigate("/premium");
         return;
       }
     }
