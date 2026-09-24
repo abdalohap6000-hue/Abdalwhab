@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2 } from "lucide-react";
+import { Trash2, CloudOff, RefreshCw } from "lucide-react";
 import moment from "moment";
 import { toast } from "sonner";
 import BottomNav from "../components/qalami/BottomNav";
@@ -39,6 +39,7 @@ export default function History() {
   const { t, dir } = useI18n();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [viewingPost, setViewingPost] = useState(null);
 
   useEffect(() => { loadPosts(); }, []);
@@ -46,7 +47,8 @@ export default function History() {
   const loadPosts = async () => {
     setLoading(true);
     const data = await SavedPost.list("-created_date", 50);
-    setPosts(data);
+    if (data === null) setLoadError(true); // فشل الجلب (مثل انقطاع الشبكة)
+    else { setLoadError(false); setPosts(data); }
     setLoading(false);
   };
 
@@ -74,6 +76,16 @@ export default function History() {
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-7 h-7 border-2 border-white/10 border-t-purple-500 rounded-full animate-spin" />
+          </div>
+        ) : loadError ? (
+          <div className="text-center py-20 space-y-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl" style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
+              <CloudOff className="w-6 h-6 text-red-400" />
+            </div>
+            <h2 className="text-lg font-bold text-white/70">{t("library_load_error")}</h2>
+            <button onClick={loadPosts} className="btn-generate-bg text-white font-bold px-6 py-3 rounded-2xl text-sm inline-flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" /> {t("retry")}
+            </button>
           </div>
         ) : posts.length === 0 ? (
           <div className="text-center py-20 space-y-4">
