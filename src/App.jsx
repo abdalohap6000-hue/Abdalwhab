@@ -4,6 +4,7 @@ import { LanguageProvider } from './i18n';
 import { AuthProvider } from './hooks/useAuth';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
+import OfflineBanner from './components/qalami/OfflineBanner';
 import Splash from './pages/Splash';
 import Auth from './pages/Auth';
 import Home from './pages/Home';
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
+            <OfflineBanner />
             <Toaster richColors position="top-center" />
           </AuthProvider>
         </Router>
