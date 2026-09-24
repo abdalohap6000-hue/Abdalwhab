@@ -16,6 +16,8 @@
     "@revenuecat/purchases-capacitor": "13.6.0",
     "@revenuecat/purchases-capacitor-ui": "13.6.0",
     "@supabase/supabase-js": "^2.112.3",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
     "framer-motion": "^11.16.4",
     "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
