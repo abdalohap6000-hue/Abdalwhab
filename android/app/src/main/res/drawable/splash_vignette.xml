@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- خلفية شاشة الإطلاق: أسود بحواف بنفسجية متوهجة (تظهر على أندرويد < 12 ولحظة ما قبل WebView) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/black" />
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="0.5"
+                android:gradientRadius="78%p"
+                android:startColor="#00020203"
+                android:centerColor="#00020203"
+                android:endColor="#4D7C4DFF" />
+        </shape>
+    </item>
+</layer-list>
