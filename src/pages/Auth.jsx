@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/i18n";
@@ -16,6 +17,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState("signin"); // signin | signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -133,9 +135,25 @@ export default function AuthPage() {
           <input type="email" placeholder={t("auth_email_ph")} value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr"
             className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 outline-none"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
-          <input type="password" placeholder={t("auth_password_ph")} value={password} onChange={(e) => setPassword(e.target.value)} dir="ltr"
-            className="w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/30 outline-none"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder={t("auth_password_ph")}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              dir="ltr"
+              className="w-full px-4 py-3 pe-10 rounded-xl text-sm text-white placeholder-white/30 outline-none"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
           <button type="submit" disabled={busy}
             className="w-full h-12 rounded-2xl text-sm font-bold btn-generate-bg text-white disabled:opacity-50">
             {busy ? "..." : mode === "signin" ? t("auth_enter") : t("auth_create")}

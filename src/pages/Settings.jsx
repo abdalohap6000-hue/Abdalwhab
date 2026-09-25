@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronLeft, LogOut } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 import BottomNav from "../components/qalami/BottomNav";
 import { isAdmin } from "../lib/creditsService";
 import { toast } from "sonner";
@@ -28,8 +29,49 @@ export default function Settings() {
     isAdmin().then(setAdmin);
   }, []);
 
+  const handleShare = async () => {
+    const isNative = Capacitor.isNativePlatform();
+    const shareUrl = isNative || window.location.origin.includes("localhost")
+      ? "https://play.google.com/store/apps/details?id=com.qalami.app"
+      : window.location.origin;
+
+    const shareData = {
+      title: lang === "ar" ? "تطبيق قلمي AI" : "Qalami AI App",
+      text: lang === "ar"
+        ? "جرّب تطبيق قلمي لصناعة المحتوى بالذكاء الاصطناعي ✨"
+        : "Try Qalami AI for smart content generation ✨",
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success(lang === "ar" ? "تم نسخ رابط التطبيق إلى الحافظة بنجاح! 📋" : "App link copied to clipboard! 📋");
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = shareUrl;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        toast.success(lang === "ar" ? "تم نسخ رابط التطبيق إلى الحافظة بنجاح! 📋" : "App link copied to clipboard! 📋");
+      }
+    } catch {
+      toast.error(lang === "ar" ? "تعذّر نسخ الرابط" : "Failed to copy link");
+    }
+  };
+
   const handleClick = (id) => {
-    if (id === "share" && navigator.share) navigator.share({ title: "Qalami AI", url: window.location.origin });
+    if (id === "share") handleShare();
     if (id === "contact") window.location.href = "mailto:support@example.com?subject=Qalami AI";
     if (id === "privacy") window.open("https://sites.google.com/view/qalamil", "_blank", "noopener,noreferrer");
   };
