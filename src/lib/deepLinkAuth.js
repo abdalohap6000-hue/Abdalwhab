@@ -13,6 +13,7 @@
 //   - Implicit:  com.qalami.app://auth-callback#access_token=...&refresh_token=...
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
+import { Browser } from '@capacitor/browser';
 import { supabase } from '@/integrations/supabase/client';
 
 export function initDeepLinkAuth() {
@@ -22,6 +23,9 @@ export function initDeepLinkAuth() {
   App.addListener('appUrlOpen', async ({ url }) => {
     try {
       if (!url || !url.includes('auth-callback')) return;
+
+      // إغلاق نافذة المتصفح الخارجي فوراً للعودة السلسة لواجهة التطبيق
+      await Browser.close().catch(() => {});
 
       // استخراج البارامترات من الهاش أو الاستعلام (أيهما وجد)
       const hashIndex = url.indexOf('#');

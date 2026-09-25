@@ -72,7 +72,7 @@ export default function Settings() {
 
   const handleClick = (id) => {
     if (id === "share") handleShare();
-    if (id === "contact") window.location.href = "mailto:abdalohap6000@gmail.com?subject=Qalami AI";
+    if (id === "contact") window.location.href = "mailto:support@example.com?subject=Qalami AI";
     if (id === "privacy") window.open("https://sites.google.com/view/qalamil", "_blank", "noopener,noreferrer");
   };
 

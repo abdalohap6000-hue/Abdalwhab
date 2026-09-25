@@ -142,13 +142,13 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               dir="ltr"
-              className="w-full px-4 py-3 pe-10 rounded-xl text-sm text-white placeholder-white/30 outline-none"
+              className="w-full pl-4 pr-10 py-3 rounded-xl text-sm text-white placeholder-white/30 outline-none"
               style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
