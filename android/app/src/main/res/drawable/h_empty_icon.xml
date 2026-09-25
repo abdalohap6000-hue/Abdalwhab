@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- شكل شفاف تماماً — يُستخدم كأيقونة شاشة الإطلاق على أندرويد 12+ لكي لا يظهر أي شيء داخل الشاشة -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#00000000" />
+    <size
+        android:width="1dp"
+        android:height="1dp" />
+</shape>
