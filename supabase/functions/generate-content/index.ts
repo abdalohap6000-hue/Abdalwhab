@@ -11,6 +11,11 @@ const corsHeaders = {
 const AI_BASE_URL = "https://ai.gateway.lovable.dev/v1";
 const DEFAULT_MODEL = Deno.env.get("VITE_AI_MODEL") || "google/gemini-3-flash-preview";
 
+// سقف حماية من الطلبات الضخمة (استنزاف رصيد البوابة). الطلب الشرعي
+// من الواجهة لا يتجاوز ~٢٠٠٠ حرف بكثير، فالسقف لا يمس أي مسار قائم.
+const MAX_PROMPT_CHARS = 8000;
+const MAX_SYSTEM_CHARS = 8000;
+
 // النموذج المجاني الوحيد المتاح لغير المشتركين
 const FREE_MODEL = "google/gemini-2.5-flash-lite";
 
@@ -60,6 +65,12 @@ Deno.serve(async (req: Request) => {
 
     if (!prompt || typeof prompt !== "string") {
       return json({ error: "الحقل prompt مطلوب" }, 400);
+    }
+    if (prompt.length > MAX_PROMPT_CHARS) {
+      return json({ error: `النص طويل جداً (${prompt.length} حرفاً) — الحد الأقصى ${MAX_PROMPT_CHARS} حرف.` }, 400);
+    }
+    if (typeof system === "string" && system.length > MAX_SYSTEM_CHARS) {
+      return json({ error: `نص النظام يتجاوز الحد الأقصى (${MAX_SYSTEM_CHARS} حرف).` }, 400);
     }
 
     const model = requestedModel && ALLOWED_MODELS.has(requestedModel) ? requestedModel : DEFAULT_MODEL;
