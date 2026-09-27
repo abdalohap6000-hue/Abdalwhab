@@ -54,5 +54,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: brokeredPreviewStorage(),
     persistSession: true,
     autoRefreshToken: true,
+    // PKCE: رابط العودة يحمل رمزاً لمرة واحدة بدل توكنات الجلسة،
+    // فيصبح اعتراض المخطط المخصص (custom scheme) بلا قيمة.
+    // المعالجة موجودة مسبقاً في deepLinkAuth.js (exchangeCodeForSession).
+    flowType: 'pkce',
   }
 });

@@ -88,6 +88,19 @@ Deno.serve(async (req: Request) => {
       return json({ ok: true, granted: "free" });
     }
 
+    if (type === "CANCELLATION") {
+      // إلغاء التجديد التلقائي: يبقى الاشتراك فعالاً حتى نهاية الفترة المدفوعة
+      // (لا نغيّر الخطة)، لكن نصفّر renews_at حتى لا تمدّد دالة renew_credits
+      // الاشتراك شهراً جديداً مجاناً إذا تأخر أو فشل حدث EXPIRATION.
+      // عند وصول EXPIRATION لاحقاً تتحول الخطة إلى "free" كالمعتاد.
+      const { error } = await admin
+        .from("user_credits")
+        .update({ renews_at: null })
+        .eq("user_id", appUserId);
+      if (error) return json({ error: error.message }, 500);
+      return json({ ok: true, revoked_renewal: true });
+    }
+
     return json({ ok: true, ignored: type });
   } catch (err) {
     return json({ error: err instanceof Error ? err.message : "خطأ غير معروف" }, 500);
